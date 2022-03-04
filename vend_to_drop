@@ -1,0 +1,72 @@
+--Made by Adiyatma
+RunThread(function()
+
+Bot = GetBot("bot")
+vendx = 
+vendy =
+
+dropx = 
+dropy = 
+
+function Collec(range)
+for _,b in pairs(GetBots()) do
+  plr = b:GetLocal()
+  if plr ~= nil then
+    for _, obj in pairs(b:GetWorld():GetObjects()) do
+      if math.abs(obj.pos_x - plr.pos_x) <= range and math.abs(obj.pos_y - plr.pos_y) <= range then
+        pkt = GamePacket()
+        pkt.type = 11
+        pkt.int_data = obj.index
+        pkt.pos_x = obj.pos_x
+        pkt.pos_y = obj.pos_y
+        b:SendPacketRaw(pkt)
+      end
+    end
+  end
+end
+end
+
+function EmptyStock(current_bot, varlist, netid, delay)
+    if varlist[0] == "OnDialogRequest" and varlist[1]:find("end_dialog|vending") then
+        pkt = string.format([[action|dialog_return
+            dialog_name|vending
+            tilex|%d|
+            tiley|%d|
+            buttonClicked|pullstock
+            ]], varlist[1]:match("embed_data|tilex|(%d+)"), varlist[1]:match("embed_data|tiley|(%d+)"))
+        Bot:SendPacket(2, pkt)
+        return true
+    end
+end
+
+Bot:AddCallback(VARIANTLIST, "EmptyStock", EmptyStock)
+
+function drop1(itemID, count)
+        hide = true
+        Bot:SendPacket(2,"action|drop\n|itemID|" .. itemID)
+        Sleep(150)
+        Bot:SendPacket(2,"action|dialog_return\ndialog_name|drop_item\nitemID|" .. itemID .. "|\ncount|" .. count)
+        Sleep(250)
+        hide = false
+end
+        
+
+
+while true do
+--vendworld
+Bot:Warp(vendworld|id)
+Sleep(4500)
+Bot:FindPath(vendx - 1, vendy - 1)
+Bot:WrenchTile(vendx - 1, vendy - 1)
+Sleep(4500)
+
+--dropworld
+Bot:Warp(dropworld|id)
+Sleep(1250)
+Bot:FindPath(dropx - 1 , dropy - 1)
+Collec(2)
+Sleep(4500)
+
+drop1(itemid, count)
+end
+end)
